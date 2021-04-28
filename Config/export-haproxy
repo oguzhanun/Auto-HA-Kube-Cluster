@@ -1,0 +1,16 @@
+# ${APISERVER_DEST_PORT} the port through which Kubernetes will talk to the API Server.
+# ${APISERVER_SRC_PORT} the port used by the API Server instances
+# ${HOST1_ID} a symbolic name for the first load-balanced API Server host
+# ${HOST1_ADDRESS} a resolvable address (DNS name, IP address) for the first load-balanced API Server host
+# additional server lines, one for each load-balanced API Server host
+# MMIP, MB1IP, MB2IP values should be replaced before using this script
+
+
+export APISERVER_DEST_PORT=8443
+export APISERVER_SRC_PORT=6443
+export HOST1_ID=MASTERMASTER
+export HOST1_ADDRESS=${MMIP}
+export HOST1_ID=MASTERBACKUP1
+export HOST1_ADDRESS=${MB1IP}
+export HOST1_ID=MASTERBACKUP2
+export HOST1_ADDRESS=${MB2IP}
