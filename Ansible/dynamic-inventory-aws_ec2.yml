@@ -1,0 +1,18 @@
+plugin: aws_ec2
+aws_profile: matt
+regions:
+  - "us-east-1"
+filters:
+  tag:Project: tera-kube-ans
+  #tag:environment: dev
+keyed_groups:
+  - key: tags['Project']
+    prefix: 'all_instances'
+    #separator: ''
+  - key: tags['Role']
+    prefix: 'role'
+    #separator: '*'
+hostnames:
+  - "ip-address"
+compose:
+  ansible_user: "'ubuntu'"
