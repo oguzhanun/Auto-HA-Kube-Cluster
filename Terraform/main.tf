@@ -153,6 +153,7 @@ resource "aws_instance" "kube-master" {
         Name = "kube-master"
         "kubernetes.io/cluster/mattsCluster" = "owned"
         Project = "Auto-HA-Kube-Cluster"
+        Group = "masters"
         Role = "master"
         Id = "1"
     }
@@ -170,6 +171,7 @@ resource "aws_instance" "kube-master-backup" {
         Name = "kube-master-backup"
         "kubernetes.io/cluster/mattsCluster" = "owned"
         Project = "Auto-HA-Kube-Cluster"
+        Group = "masters"
         Role = "masterbackup"
         Id = "1"
     }
@@ -188,6 +190,7 @@ resource "aws_instance" "worker-1" {
         Name = "worker-1"
         "kubernetes.io/cluster/mattsCluster" = "owned"
         Project = "Auto-HA-Kube-Cluster"
+        Group = "workers"
         Role = "worker"
         Id = "1"
     }
@@ -206,6 +209,7 @@ resource "aws_instance" "worker-2" {
         Name = "worker-2"
         "kubernetes.io/cluster/mattsCluster" = "owned"
         Project = "Auto-HA-Kube-Cluster"
+        Group = "workers"
         Role = "worker"
         Id = "2"
     }

@@ -9,6 +9,9 @@ keyed_groups:
   - key: tags['Project']
     prefix: 'all_instances'
     #separator: ''
+  - key: tags['Group']
+    prefix: 'group'
+    #separator: '*'
   - key: tags['Role']
     prefix: 'role'
     #separator: '*'
