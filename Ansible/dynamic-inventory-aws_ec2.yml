@@ -3,7 +3,7 @@ aws_profile: matt
 regions:
   - "us-east-1"
 filters:
-  tag:Project: tera-kube-ans
+  tag:Project: Auto-HA-Kube-Cluster
   #tag:environment: dev
 keyed_groups:
   - key: tags['Project']
