@@ -58,6 +58,36 @@
       state: restarted
 
 
+- hosts: group_masters
+  become: yes
+  tasks:
+      
+  - name: create necessary folders
+    shell: mkdir -p /etc/keepalived /etc/haproxy /etc/kubernetes/manifests
+
+  - name: copy the config files into remote machines
+    copy:
+      src: ../Config/
+      dest: /ubuntu/home/ 
+
+  - name: install gettext-base package
+    apt:
+      package: gettext-base
+      state: present 
+
+  - name: export variables for export files
+    become: yes
+    shell: 
+
+  - name: run export files
+    become: yes
+    shell: 
+
+  - name: produce real config file out of base config files and put them into related paths
+    become: yes
+    shell: 
+
+
 - hosts: role_master
   tasks:
       
