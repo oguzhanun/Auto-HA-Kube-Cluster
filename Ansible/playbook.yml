@@ -67,7 +67,7 @@
 
   - name: copy the config files into remote machines
     copy:
-      src: ../Config/
+      src: ../Config
       dest: /ubuntu/home/ 
 
   - name: install gettext-base package
@@ -75,22 +75,47 @@
       package: gettext-base
       state: present 
 
-  - name: export variables for export files
+  - name: produce export-haproxy
     become: yes
-    shell: 
+    shell: |
+      cd /home/ubuntu/Config
+      export MMIP={{ hostvars[groups['role_master'][0]]['private_ip_address'] }}
+      export MB1IP={{ hostvars[groups['role_masterbackup'][0]]['private_ip_address'] }}
+      envsubst < export-haproxy-base > export-haproxy
 
-  - name: run export files
-    become: yes
-    shell: 
-
-  - name: produce real config file out of base config files and put them into related paths
-    become: yes
-    shell: 
 
 
 - hosts: role_master
   tasks:
-      
+
+  - name: run exports and envsubst
+    become: yes
+    shell: |
+      cd /home/ubuntu/Config
+      source export-haproxy
+      source export-health-check
+      source export-keepalived-master-master
+      envsubst < check_apiserver-base.sh > check_apiserver.sh
+      envsubst < haproxy-base.cfg > haproxy.cfg
+      envsubst < keepalived-base.conf > keepalived.conf
+
+  - name: move config files
+    become: yes
+    shell: |
+      cd /home/ubuntu/Config
+      mkdir -p /etc/keepalived
+      mkdir -p /etc/haproxy
+      mv check_apiserver.sh /etc/keepalived/
+      mv haproxy.cfg /etc/haproxy/
+      mv keepalived.conf /etc/keepalived/
+
+
+
+
+
+
+
+
   - name: pull kubernetes images before installation
     become: yes
     shell: kubeadm config images pull
@@ -109,7 +134,7 @@
 
   - name: change controlplane_endpoint and produce the clusterconfig.yml file
     shell: |
-      export CONTROLPLANE_ENDPOINT={{ hostvars[inventory_hostname]['private_ip_address'] }}
+      export CONTROLPLANE_ENDPOINT=10.68.6.1
       envsubst < /home/ubuntu/clusterconfig-base.yml > /home/ubuntu/clusterconfig.yml
 
   - name: initialize the Kubernetes cluster using kubeadm
@@ -136,6 +161,39 @@
 
   - name: Copy join command to local file
     local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="/Users/home/join-command"
+
+
+
+
+
+- hosts: role_masterbackup
+  tasks:
+
+  - name: run exports and envsubst
+    become: yes
+    shell: |
+      cd /home/ubuntu/Config
+      source export-haproxy
+      source export-health-check
+      source export-keepalived-master-backup
+      envsubst < check_apiserver-base.sh > check_apiserver.sh
+      envsubst < haproxy-base.cfg > haproxy.cfg
+      envsubst < keepalived-base.conf > keepalived.conf
+
+  - name: move config files
+    become: yes
+    shell: |
+      cd /home/ubuntu/Config
+      mkdir -p /etc/keepalived
+      mkdir -p /etc/haproxy
+      mv check_apiserver.sh /etc/keepalived/
+      mv haproxy.cfg /etc/haproxy/
+      mv keepalived.conf /etc/keepalived/
+
+
+
+
+
 
 
 - hosts: role_worker

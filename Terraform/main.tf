@@ -15,6 +15,7 @@ resource "aws_security_group" "matt-kube-worker-sg" {
     to_port = 10250
     cidr_blocks = ["0.0.0.0/0"]
   }
+
   ingress {
     protocol = "tcp"
     from_port = 30000
@@ -49,6 +50,7 @@ resource "aws_security_group" "matt-kube-worker-sg" {
     to_port = 0
     cidr_blocks = ["0.0.0.0/0"]
   }
+  
   tags = {
     Name = "kube-worker-secgroup"
     "kubernetes.io/cluster/mattsCluster" = "owned"
@@ -98,24 +100,28 @@ resource "aws_security_group" "matt-kube-master-sg" {
     to_port = 2380
     security_groups = [aws_security_group.matt-kube-worker-sg.id]
   }
+
   ingress {
     protocol = "tcp"
     from_port = 2379
     to_port = 2379
     security_groups = [aws_security_group.matt-kube-worker-sg.id]
   }
+
   ingress {
     protocol = "tcp"
     from_port = 10250
     to_port = 10250
     security_groups = [aws_security_group.matt-kube-worker-sg.id]
   }
+
   ingress {
     protocol = "tcp"
     from_port = 10251
     to_port = 10251
     security_groups = [aws_security_group.matt-kube-worker-sg.id]
   }
+
   ingress {
     protocol = "tcp"
     from_port = 10252
@@ -129,12 +135,14 @@ resource "aws_security_group" "matt-kube-master-sg" {
     to_port = 8472
     security_groups = [aws_security_group.matt-kube-worker-sg.id]
   }
+
   egress {
     protocol = "-1"
     from_port = 0
     to_port = 0
     cidr_blocks = ["0.0.0.0/0"]
   }
+
   tags = {
     Name = "kube-master-secgroup"
     # "kubernetes.io/cluster/mattsCluster" = "owned"
