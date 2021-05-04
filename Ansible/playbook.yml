@@ -84,7 +84,6 @@
       envsubst < export-haproxy-base > export-haproxy
 
 
-
 - hosts: role_master
   tasks:
 
@@ -108,13 +107,6 @@
       mv check_apiserver.sh /etc/keepalived/
       mv haproxy.cfg /etc/haproxy/
       mv keepalived.conf /etc/keepalived/
-
-
-
-
-
-
-
 
   - name: pull kubernetes images before installation
     become: yes
@@ -163,7 +155,29 @@
     local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="/Users/home/join-command"
 
 
+- hosts: role_masterbackup
+  tasks:
 
+  - name: run exports and envsubst
+    become: yes
+    shell: |
+      cd /home/ubuntu/Config
+      source export-haproxy
+      source export-health-check
+      source export-keepalived-master-backup
+      envsubst < check_apiserver-base.sh > check_apiserver.sh
+      envsubst < haproxy-base.cfg > haproxy.cfg
+      envsubst < keepalived-base.conf > keepalived.conf
+
+  - name: move config files
+    become: yes
+    shell: |
+      cd /home/ubuntu/Config
+      mkdir -p /etc/keepalived
+      mkdir -p /etc/haproxy
+      mv check_apiserver.sh /etc/keepalived/
+      mv haproxy.cfg /etc/haproxy/
+      mv keepalived.conf /etc/keepalived/
 
 
 - hosts: role_masterbackup
