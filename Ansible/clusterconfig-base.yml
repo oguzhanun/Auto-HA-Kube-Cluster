@@ -12,8 +12,9 @@ controllerManager:
     cloud-provider: external
 
 ---
-apiVersion: kubeadm.k8s.io/v1beta1
+apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
+certificateKey: ${CERTIFICATE_KEY}
 nodeRegistration:
   kubeletExtraArgs:
     cloud-provider: external
