@@ -127,12 +127,14 @@
   - name: change controlplane_endpoint and produce the clusterconfig.yml file
     shell: |
       export CONTROLPLANE_ENDPOINT=10.68.6.1
+      export CERTIFICATE_KEY=$(kubeadm certs certificate-key)
+      echo $CERTIFICATE_KEY > /home/ubuntu/certificate_key
       envsubst < /home/ubuntu/clusterconfig-base.yml > /home/ubuntu/clusterconfig.yml
 
   - name: initialize the Kubernetes cluster using kubeadm
     become: true
     shell: |
-      kubeadm init --config /home/ubuntu/clusterconfig.yml
+      kubeadm init --config /home/ubuntu/clusterconfig.yml --upload-certs
     # "kubeadm init --apiserver-advertise-address={{ hostvars[groups['role_master'][0]]['ansible_eth0']['ipv4']['address'] }} --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU,Mem" #"All" can also be used.. 
     
   - name: Setup kubeconfig for ubuntu user
@@ -154,30 +156,11 @@
   - name: Copy join command to local file
     local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="/Users/home/join-command"
 
-
-- hosts: role_masterbackup
-  tasks:
-
-  - name: run exports and envsubst
-    become: yes
-    shell: |
-      cd /home/ubuntu/Config
-      source export-haproxy
-      source export-health-check
-      source export-keepalived-master-backup
-      envsubst < check_apiserver-base.sh > check_apiserver.sh
-      envsubst < haproxy-base.cfg > haproxy.cfg
-      envsubst < keepalived-base.conf > keepalived.conf
-
-  - name: move config files
-    become: yes
-    shell: |
-      cd /home/ubuntu/Config
-      mkdir -p /etc/keepalived
-      mkdir -p /etc/haproxy
-      mv check_apiserver.sh /etc/keepalived/
-      mv haproxy.cfg /etc/haproxy/
-      mv keepalived.conf /etc/keepalived/
+  - name: Copy join command to local file
+    fetch: 
+      src: /home/ubuntu/certificate_key
+      dest: /Users/home/
+      flat: yes
 
 
 - hosts: role_masterbackup
@@ -205,6 +188,45 @@
       mv keepalived.conf /etc/keepalived/
 
 
+- hosts: role_masterbackup
+  tasks:
+
+  - name: run exports and envsubst
+    become: yes
+    shell: |
+      cd /home/ubuntu/Config
+      source export-haproxy
+      source export-health-check
+      source export-keepalived-master-backup
+      envsubst < check_apiserver-base.sh > check_apiserver.sh
+      envsubst < haproxy-base.cfg > haproxy.cfg
+      envsubst < keepalived-base.conf > keepalived.conf
+
+  - name: move config files
+    become: yes
+    shell: |
+      cd /home/ubuntu/Config
+      mkdir -p /etc/keepalived
+      mkdir -p /etc/haproxy
+      mv check_apiserver.sh /etc/keepalived/
+      mv haproxy.cfg /etc/haproxy/
+      mv keepalived.conf /etc/keepalived/
+
+  - name: Copy the join command to server location
+    copy: 
+      src: /Users/home/join-command 
+      dest: /tmp/join-command.sh 
+      mode: '0777'
+
+  - name: Copy the certificate key
+    copy: 
+      src: /Users/home/certificate_key 
+      dest: /tmp/certificate_key
+      mode: '0777'
+
+  - name: Join the node to cluster
+    shell: |
+      sh ${cat /tmp/join-command.sh} --control-plane --certificate-key ${cat /tmp/certificate_key}
 
 
 
