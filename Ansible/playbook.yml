@@ -124,7 +124,7 @@
       package: gettext-base
       state: present
 
-  - name: change controlplane_endpoint and produce the clusterconfig.yml file
+  - name: change controlplane_endpoint, certificate key and produce the clusterconfig.yml file
     shell: |
       export CONTROLPLANE_ENDPOINT=10.68.6.1
       export CERTIFICATE_KEY=$(kubeadm certs certificate-key)
@@ -156,36 +156,11 @@
   - name: Copy join command to local file
     local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="/Users/home/join-command"
 
-  - name: Copy join command to local file
+  - name: Copy certificate key to local
     fetch: 
       src: /home/ubuntu/certificate_key
       dest: /Users/home/
       flat: yes
-
-
-- hosts: role_masterbackup
-  tasks:
-
-  - name: run exports and envsubst
-    become: yes
-    shell: |
-      cd /home/ubuntu/Config
-      source export-haproxy
-      source export-health-check
-      source export-keepalived-master-backup
-      envsubst < check_apiserver-base.sh > check_apiserver.sh
-      envsubst < haproxy-base.cfg > haproxy.cfg
-      envsubst < keepalived-base.conf > keepalived.conf
-
-  - name: move config files
-    become: yes
-    shell: |
-      cd /home/ubuntu/Config
-      mkdir -p /etc/keepalived
-      mkdir -p /etc/haproxy
-      mv check_apiserver.sh /etc/keepalived/
-      mv haproxy.cfg /etc/haproxy/
-      mv keepalived.conf /etc/keepalived/
 
 
 - hosts: role_masterbackup
@@ -228,10 +203,13 @@
     shell: |
       sh ${cat /tmp/join-command.sh} --control-plane --certificate-key ${cat /tmp/certificate_key}
 
-
-
-
-
+  - name: Restart kubelet
+    service:
+      name: kubelet
+      daemon_reload: yes
+      state: restarted
+     
+      
 - hosts: role_worker
   become: true
   tasks:
