@@ -176,7 +176,7 @@ resource "aws_instance" "kube-master-backup1" {
     subnet_id = "subnet-c41ba589"
     availability_zone = "us-east-1a"
     tags = {
-        Name = "kube-master-backup"
+        Name = "kube-master-backup-1"
         "kubernetes.io/cluster/mattsCluster" = "owned"
         Project = "Auto-HA-Kube-Cluster"
         Group = "masters"
@@ -194,7 +194,7 @@ resource "aws_instance" "kube-master-backup2" {
     subnet_id = "subnet-c41ba589"
     availability_zone = "us-east-1a"
     tags = {
-        Name = "kube-master-backup"
+        Name = "kube-master-backup-2"
         "kubernetes.io/cluster/mattsCluster" = "owned"
         Project = "Auto-HA-Kube-Cluster"
         Group = "masters"
