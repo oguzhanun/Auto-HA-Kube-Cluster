@@ -81,6 +81,7 @@
       cd /home/ubuntu/Config
       export MMIP={{ hostvars[groups['role_master'][0]]['private_ip_address'] }}
       export MB1IP={{ hostvars[groups['role_masterbackup'][0]]['private_ip_address'] }}
+      export MB2IP={{ hostvars[groups['role_masterbackup'][1]]['private_ip_address'] }}
       envsubst < export-haproxy-base > export-haproxy
 
 
