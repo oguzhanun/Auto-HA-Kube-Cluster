@@ -1,5 +1,5 @@
 provider "aws" {
-  region  = var.region
+  region  = "us-east-1"
   profile = "matt"
 }
 
@@ -248,9 +248,15 @@ output kube-master-ip {
 }
 
 output kube-master-backup-ip {
-  value       = aws_instance.kube-master-backup.public_ip
+  value       = aws_instance.kube-master-backup1.public_ip
   sensitive   = false
-  description = "public ip of the kube-master-backup"
+  description = "public ip of the kube-master-backup1"
+}
+
+output kube-master-backup-ip {
+  value       = aws_instance.kube-master-backup2.public_ip
+  sensitive   = false
+  description = "public ip of the kube-master-backup2"
 }
 
 output worker-1-ip {
