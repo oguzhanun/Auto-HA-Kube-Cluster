@@ -167,7 +167,7 @@ resource "aws_instance" "kube-master" {
     }
 }
 
-resource "aws_instance" "kube-master-backup" {
+resource "aws_instance" "kube-master-backup1" {
     ami = "ami-013f17f36f8b1fefb"
     instance_type = "t2.medium"
     iam_instance_profile = module.iam.master_profile_name
@@ -182,6 +182,24 @@ resource "aws_instance" "kube-master-backup" {
         Group = "masters"
         Role = "masterbackup"
         Id = "1"
+    }
+}
+
+resource "aws_instance" "kube-master-backup2" {
+    ami = "ami-013f17f36f8b1fefb"
+    instance_type = "t2.medium"
+    iam_instance_profile = module.iam.master_profile_name
+    vpc_security_group_ids = [aws_security_group.matt-kube-master-sg.id]
+    key_name = "mattskey"
+    subnet_id = "subnet-c41ba589"
+    availability_zone = "us-east-1a"
+    tags = {
+        Name = "kube-master-backup"
+        "kubernetes.io/cluster/mattsCluster" = "owned"
+        Project = "Auto-HA-Kube-Cluster"
+        Group = "masters"
+        Role = "masterbackup"
+        Id = "2"
     }
 }
 
