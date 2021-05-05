@@ -247,13 +247,13 @@ output kube-master-ip {
   description = "public ip of the kube-master"
 }
 
-output kube-master-backup-ip {
+output kube-master-backup-ip1 {
   value       = aws_instance.kube-master-backup1.public_ip
   sensitive   = false
   description = "public ip of the kube-master-backup1"
 }
 
-output kube-master-backup-ip {
+output kube-master-backup-ip2 {
   value       = aws_instance.kube-master-backup2.public_ip
   sensitive   = false
   description = "public ip of the kube-master-backup2"
