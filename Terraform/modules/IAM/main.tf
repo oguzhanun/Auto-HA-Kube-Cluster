@@ -1,11 +1,11 @@
 resource "aws_iam_policy" "policy_for_master_role" {
   name        = "policy_for_master_role"
-  policy      = file("./modules/IAM/policy_for_master.json")
+  policy      = file("./Terraform/modules/IAM/policy_for_master.json")
 }
 
 resource "aws_iam_policy" "policy_for_worker_role" {
   name        = "policy_for_worker_role"
-  policy      = file("./modules/IAM/policy_for_worker.json")
+  policy      = file("./Terraform/modules/IAM/policy_for_worker.json")
 }
 
 resource "aws_iam_role" "role_for_master" {
