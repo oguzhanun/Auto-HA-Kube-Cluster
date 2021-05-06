@@ -83,6 +83,13 @@ resource "aws_security_group" "matt-kube-master-sg" {
 
   ingress {
     protocol = "tcp"
+    from_port = 8443
+    to_port = 8443
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    protocol = "tcp"
     from_port = 30000
     to_port = 32767
     cidr_blocks = ["0.0.0.0/0"]
