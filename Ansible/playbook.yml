@@ -68,7 +68,7 @@
   - name: copy the config files into remote machines
     copy:
       src: ../Config
-      dest: /ubuntu/home/ 
+      dest: /home/ubuntu/
 
   - name: install gettext-base package
     apt:
@@ -128,16 +128,16 @@
   - name: change controlplane_endpoint, certificate key and produce the clusterconfig.yml file
     shell: |
       export CONTROLPLANE_ENDPOINT=10.68.6.1
-      export CERTIFICATE_KEY=$(kubeadm certs certificate-key)
+      export CERTIFICATE_KEY=$(kubeadm alpha certs certificate-key)
       echo $CERTIFICATE_KEY > /home/ubuntu/certificate_key
       envsubst < /home/ubuntu/clusterconfig-base.yml > /home/ubuntu/clusterconfig.yml
 
   - name: initialize the Kubernetes cluster using kubeadm
     become: true
     shell: |
-      kubeadm init --config /home/ubuntu/clusterconfig.yml --upload-certs
+      kubeadm init --config /home/ubuntu/clusterconfig.yml --upload-certs --ignore-preflight-errors=All
     # "kubeadm init --apiserver-advertise-address={{ hostvars[groups['role_master'][0]]['ansible_eth0']['ipv4']['address'] }} --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU,Mem" #"All" can also be used.. 
-    
+
   - name: Setup kubeconfig for ubuntu user
     become: true
     command: "{{ item }}"
@@ -202,7 +202,8 @@
 
   - name: Join the node to cluster
     shell: |
-      sh ${cat /tmp/join-command.sh} --control-plane --certificate-key ${cat /tmp/certificate_key}
+      sh ${cat /tmp/join-command.sh} --control-plane --certificate-key ${kubeadm init phase upload-certs --upload-certs}
+# sh ${cat /tmp/join-command.sh} --control-plane --certificate-key ${cat /tmp/certificate_key}
 
   - name: Restart kubelet
     service:
@@ -241,7 +242,7 @@
       cd /home/ubuntu
       kubectl patch node {{ hostvars[groups['role_worker'][0]]['private_dns_name'] }} -p '{"spec":{"providerID":"aws:///us-east-1a/{{ hostvars[groups['role_worker'][0]]['instance_id'] }}" }}'
       kubectl patch node {{ hostvars[groups['role_worker'][1]]['private_dns_name'] }} -p '{"spec":{"providerID":"aws:///us-east-1a/{{ hostvars[groups['role_worker'][1]]['instance_id'] }}" }}'
-# kubectl patch node {{ hostvars[groups['role_master'][0]]['private_dns_name'] }} -p '{"spec":{"providerID":"aws:///us-east-1a/{{ hostvars[groups['role_master'][0]]['instance_id'] }}" }}'
+  # kubectl patch node {{ hostvars[groups['role_master'][0]]['private_dns_name'] }} -p '{"spec":{"providerID":"aws:///us-east-1a/{{ hostvars[groups['role_master'][0]]['instance_id'] }}" }}'
 
   - name: Deploy AWS CSI Driver
     become: false

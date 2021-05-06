@@ -1,0 +1,31 @@
+- hosts: group_masters
+  become: yes
+  tasks:
+      
+  # - name: create necessary folders
+  #   shell: mkdir -p /etc/keepalived /etc/haproxy /etc/kubernetes/manifests
+
+  - name: copy the config files into remote machines
+    copy:
+      src: ../Config
+      dest: /home/ubuntu/
+
+  # - name: install gettext-base package
+  #   apt:
+  #     package: gettext-base
+  #     state: present 
+
+  - name: produce export-haproxy
+    become: yes
+    shell: |
+      cd /home/ubuntu/Config
+      ls
+    register: out
+    # export MMIP={{ hostvars[groups['role_master'][0]]['private_ip_address'] }}
+    # export MB1IP={{ hostvars[groups['role_masterbackup'][0]]['private_ip_address'] }}
+    # export MB2IP={{ hostvars[groups['role_masterbackup'][1]]['private_ip_address'] }}
+    # envsubst < export-haproxy-base > export-haproxy
+
+  - name: debug
+    debug:
+      msg: "{{ out }}"
