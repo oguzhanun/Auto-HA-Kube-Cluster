@@ -208,8 +208,8 @@
 
   - name: Join the node to cluster
     shell: |
-      sh ${cat /tmp/join-command.sh} --control-plane --certificate-key ${kubeadm init phase upload-certs --upload-certs}
-# sh ${cat /tmp/join-command.sh} --control-plane --certificate-key ${cat /tmp/certificate_key}
+      sh ${cat /tmp/join-command.sh} --control-plane --certificate-key ${cat /tmp/certificate_key}
+# sh ${cat /tmp/join-command.sh} --control-plane --certificate-key ${kubeadm init phase upload-certs --upload-certs}
 
   - name: Restart kubelet
     service:
