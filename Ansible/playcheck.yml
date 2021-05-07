@@ -1,31 +1,53 @@
-- hosts: group_masters
+# - hosts: group_masters
+#   become: yes
+#   tasks:
+      
+#   - name: create necessary folders
+#     shell: mkdir -p /etc/keepalived /etc/haproxy /etc/kubernetes/manifests
+
+#   - name: copy the config files into remote machines
+#     copy:
+#       src: ../Config
+#       dest: /home/ubuntu/
+
+#   - name: install gettext-base package
+#     apt:
+#       package: gettext-base
+#       state: present 
+
+#   - name: produce export-haproxy
+#     become: yes
+#     shell: |
+#       mkdir -p /etc/kubernetes/manifests
+#       cd /home/ubuntu/Config
+#       export MMIP={{ hostvars[groups['role_master'][0]]['private_ip_address'] }}
+#       export MB1IP={{ hostvars[groups['role_masterbackup'][0]]['private_ip_address'] }}
+#       export MB2IP={{ hostvars[groups['role_masterbackup'][1]]['private_ip_address'] }}
+#       envsubst < export-haproxy-base > export-haproxy
+
+
+- hosts: role_master
   become: yes
   tasks:
-      
-  # - name: create necessary folders
-  #   shell: mkdir -p /etc/keepalived /etc/haproxy /etc/kubernetes/manifests
 
-  - name: copy the config files into remote machines
-    copy:
-      src: ../Config
-      dest: /home/ubuntu/
-
-  # - name: install gettext-base package
-  #   apt:
-  #     package: gettext-base
-  #     state: present 
-
-  - name: produce export-haproxy
-    become: yes
+  - name: run exports and envsubst
     shell: |
       cd /home/ubuntu/Config
-      ls
-    register: out
-    # export MMIP={{ hostvars[groups['role_master'][0]]['private_ip_address'] }}
-    # export MB1IP={{ hostvars[groups['role_masterbackup'][0]]['private_ip_address'] }}
-    # export MB2IP={{ hostvars[groups['role_masterbackup'][1]]['private_ip_address'] }}
-    # envsubst < export-haproxy-base > export-haproxy
+      chmod +x export-haproxy
+      chmod +x export-health-check
+      chmod +x export-keepalived-master-master
+      . ./export-haproxy
+      . ./export-health-check
+      . ./export-keepalived-master-master
+      envsubst < check_apiserver-base.sh > check_apiserver.sh
+      envsubst < haproxy-base.cfg > haproxy.cfg
+      envsubst < keepalived-base.conf > keepalived.conf
 
-  - name: debug
-    debug:
-      msg: "{{ out }}"
+  - name: move config files
+    shell: |
+      cd /home/ubuntu/Config
+      mkdir -p /etc/keepalived
+      mkdir -p /etc/haproxy
+      mv ./check_apiserver.sh /etc/keepalived/
+      mv ./haproxy.cfg /etc/haproxy/
+      mv ./keepalived.conf /etc/keepalived/
