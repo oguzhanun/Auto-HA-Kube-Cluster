@@ -3,3 +3,4 @@ Terraform/.terraform.lock.hcl
 Terraform/.terraform/*
 Terraform/.terraform.tfstate*
 Ansible/Initializing ipvs
+Ansible/untitled.json
