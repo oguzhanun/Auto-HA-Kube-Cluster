@@ -136,9 +136,13 @@
       mv ./keepalived.conf /etc/keepalived/
 
 
-- hosts: group_masters
+- hosts: role_master
   become: yes
   tasks:
+
+  # - name: pull kubernetes images before installation
+  #   become: yes
+  #   shell: kubeadm config images pull
 
   - name: move def files of haproxy
     copy:
@@ -155,16 +159,6 @@
       name: kubelet
       daemon_reload: yes
       state: started
-
-
-- hosts: role_master
-  become: yes
-  tasks:
-
-  # - name: pull kubernetes images before installation
-  #   become: yes
-  #   shell: kubeadm config images pull
-
   - name: copy the configuration
     become: yes
     copy: 
@@ -179,7 +173,7 @@
 
   - name: change controlplane_endpoint, certificate key and produce the clusterconfig.yml file
     shell: |
-      export CONTROLPLANE_ENDPOINT=192.168.2.11:8443
+      export CONTROLPLANE_ENDPOINT=172.31.16.180:8443
       export CERTIFICATE_KEY=$(kubeadm alpha certs certificate-key)
       echo $CERTIFICATE_KEY > /home/ubuntu/certificate_key
       envsubst < /home/ubuntu/clusterconfig-base.yml > /home/ubuntu/clusterconfig.yml
@@ -188,7 +182,8 @@
     become: true
     shell: |
       kubeadm init --config /home/ubuntu/clusterconfig.yml --upload-certs --ignore-preflight-errors=All --v=5
-    # "kubeadm init --apiserver-advertise-address={{ hostvars[groups['role_master'][0]]['ansible_eth0']['ipv4']['address'] }} --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU,Mem" #"All" can also be used.. 
+  # "kubeadm init --apiserver-advertise-address={{ hostvars[groups['role_master'][0]]['ansible_eth0']['ipv4']['address'] }} --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU,Mem" #"All" can also be used.. 
+  # kubeadm init --control-plane-endpoint=192.168.2.11:8443 --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=All
 
   - name: Setup kubeconfig for ubuntu user
     become: true
@@ -218,12 +213,12 @@
       dest: /Users/home/
       flat: yes
 
-  - name: grep the certificate
+  - name: generate certificate_upload
     shell: |
       cd /home/ubuntu
       sudo kubeadm init phase upload-certs --upload-certs | tail -1 > certificate_upload
 
-  - name: fetch the certificate_upload
+  - name: fetch certificate_upload
     fetch:
       src: /home/ubuntu/certificate_upload
       dest: /Users/home/
@@ -231,6 +226,7 @@
 
 
 - hosts: role_masterbackup
+  become: yes
   tasks:
 
   - name: Copy the join command to server location
@@ -238,7 +234,6 @@
       src: /Users/home/join-command 
       dest: /tmp/join-command.sh 
       mode: '0777'
-    register: joincommand
 
   - name: Copy the certificate key
     copy: 
@@ -251,24 +246,25 @@
       src: /Users/home/certificate_upload 
       dest: /tmp/certificate_upload
       mode: '0777'
-    register: upload
 
-  - name: output
-    debug:
-      msg: "{{ joincommand }} and {{ upload }}"
+  - name: move def files of haproxy
+    become: yes
+    copy:
+      src: ../Kube/haproxy.yaml
+      dest: /etc/kubernetes/manifests/
+
+  - name: move def files of keepalived
+    become: yes
+    copy:
+      src: ../Kube/keepalived.yaml
+      dest: /etc/kubernetes/manifests/
 
   - name: Join the node to cluster
     become: yes
     shell: |
-      $(cat /tmp/join-command.sh) --control-plane --certificate-key $(cat /tmp/certificate_upload) --ignore-preflight-errors=All --v=5
-
-  - name: Restart kubelet
-    service:
-      name: kubelet
-      daemon_reload: yes
-      state: restarted
+      $(cat /tmp/join-command.sh) --control-plane --certificate-key $(cat /tmp/certificate_upload) --v=5 --ignore-preflight-errors=All
      
-      
+
 - hosts: role_worker
   become: true
   tasks:
