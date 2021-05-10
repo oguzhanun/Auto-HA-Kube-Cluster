@@ -140,9 +140,9 @@
   become: yes
   tasks:
 
-  # - name: pull kubernetes images before installation
-  #   become: yes
-  #   shell: kubeadm config images pull
+  - name: pull kubernetes images before installation
+    become: yes
+    shell: kubeadm config images pull
 
   - name: move def files of haproxy
     copy:
@@ -154,11 +154,6 @@
       src: ../Kube/keepalived.yaml
       dest: /etc/kubernetes/manifests/
 
-  - name: Restart kubelet
-    service:
-      name: kubelet
-      daemon_reload: yes
-      state: started
   - name: copy the configuration
     become: yes
     copy: 
@@ -182,9 +177,7 @@
     become: true
     shell: |
       kubeadm init --config /home/ubuntu/clusterconfig.yml --upload-certs --ignore-preflight-errors=All --v=5
-  # "kubeadm init --apiserver-advertise-address={{ hostvars[groups['role_master'][0]]['ansible_eth0']['ipv4']['address'] }} --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU,Mem" #"All" can also be used.. 
-  # kubeadm init --control-plane-endpoint=192.168.2.11:8443 --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=All
-
+  
   - name: Setup kubeconfig for ubuntu user
     become: true
     command: "{{ item }}"
@@ -263,7 +256,11 @@
     become: yes
     shell: |
       $(cat /tmp/join-command.sh) --control-plane --certificate-key $(cat /tmp/certificate_upload) --v=5 --ignore-preflight-errors=All
-     
+    register: debug_join_controlplane
+
+  - name: debug controlplane instance joining
+    debug:
+      msg: "{{ debug_join_controlplane }}"
 
 - hosts: role_worker
   become: true
