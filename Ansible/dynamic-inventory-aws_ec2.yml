@@ -6,6 +6,8 @@ filters:
   tag:Project: Auto-HA-Kube-Cluster
   #tag:environment: dev
 keyed_groups:
+  - key: tags['Name']
+    prefix: 'name'
   - key: tags['Project']
     prefix: 'all_instances'
     #separator: ''
