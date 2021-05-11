@@ -1,5 +1,5 @@
 # ${APISERVER_VIP} is the virtual IP address negotiated between the keepalived cluster hosts.
 # ${APISERVER_DEST_PORT} the port through which Kubernetes will talk to the API Server. 
 
-export APISERVER_VIP=10.68.6.1
+export APISERVER_VIP=172.31.16.180
 export APISERVER_DEST_PORT=8443

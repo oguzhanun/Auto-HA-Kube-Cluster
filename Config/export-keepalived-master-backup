@@ -7,7 +7,7 @@
 
 export STATE=BACKUP
 export INTERFACE=eth0
-export ROUTER_ID=111
-export PRIORITY=110
-export AUTH_PASS=111
-export APISERVER_VIP=10.68.6.1
+export ROUTER_ID=51
+export PRIORITY=50
+export AUTH_PASS=42
+export APISERVER_VIP=172.31.16.180
