@@ -5,6 +5,7 @@ metadata:
   namespace: kube-system
 spec:
   containers:
+  # - image: haproxy
   - image: haproxy:2.1.4
     name: haproxy
     resources: {}
